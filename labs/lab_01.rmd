@@ -23,7 +23,7 @@ Remember to add any new verbs or concepts to your class reference notebook!
 
 ```{r}
 # Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
-# install.packages('tidyverse')
+install.packages('tidyverse')
 library(tidyverse)
 ```
 
@@ -39,26 +39,53 @@ umd_courses <- read_rds("lab_01.rds")
 
 ## Answer questions
 
-**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you?
-**A1**
+**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you? **A1**
 
-```{r}
+```{r} 
+umd_courses |>
+  group_by(department) |>
+  summarise(
+    mean_seats = mean(seats)
+  )|>
+  arrange(desc(mean_seats))
 ```
+I'm not surprise by the high average number of seats for engineering and computer science, but I am suprised by "Air Science" being that high. Especially since I don't really know what that means.
 
-**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. 
-**A2**
+**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. **A2**
 
 ```{r}
+umd_courses |>
+  group_by(id) |>
+  summarise(
+    count_classes = n()
+  )|>
+arrange(desc(count_classes))
 ```
 
 **Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? **A3**
 
 ```{r}
+umd_courses |>
+  group_by(instructors, department) |>
+  summarise(
+    count_classes = n()
+  )|>
+  arrange(desc(count_classes))
 ```
 
 **Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? **A4**
 
+The answer would be easier to see if the code could exclude "NA" as an instructor as the first few pages don't show an actual instructor.
+
 **Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? **A5**
 
 ```{r}
+umd_courses |>
+  group_by(instructors, department) |>
+  summarise(
+    count_classes = n()
+  )|>
+  arrange(desc(count_classes))|>
+  na.exclude(instructors)
 ```
+While I was able to exclude the NA values, it didn't exclude "Instructors: TBA" since it's technically a value but I should've been excluded because it means the same thing.
