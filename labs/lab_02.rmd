@@ -1,0 +1,130 @@
+---
+title: "lab_02"
+author: "derek willis"
+date: "2023-09-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+library(lubridate)
+```
+
+## Load Data
+
+Let's keep working with the UMD courses and Maryland campaign expense data we used in the pre_lab.
+
+```{r}
+umd_courses <- read_rds("umd_courses.rds")
+maryland_expenses <- read_csv("maryland_expenses.csv")
+```
+
+## Answer questions
+
+**Q1.** How many departments have offered the courses with "Climate" in the title and at least one seat? Which department has offered the most?
+**A1.** Quite a bit offer courses with "Climate" in the title and the Atmospheric and Oceanic Science has the most amount of classes.
+
+```{r}
+umd_courses |> 
+  filter(str_detect(title,"Climate") & seats > 0) |>
+  group_by(department) |>
+  summarize(classes =n()) |>
+  arrange(desc(classes))
+```
+
+**Q2.** Of the departments listed in A2, which one is the most interesting to you, and why?
+**A2.** I was suprised Anthropology was higher that Geographical and Marine sciences because I would think intuitively that Geographical and Marine sciences would have to do more with the climate than Anthropology
+
+
+**Q3** Which departments have the most courses in the Fall 2023 term? And which departments in that term have at least one syllabus posted? How are the top five departments different in each result?
+
+**A3.** Business Management is one top through all the filters and School of Music, English, and Information Studies are all in the list for the most part. 
+
+
+```{r}
+umd_courses |>
+  filter(term == 202308 & syllabus_count > 0)|>
+  group_by(department) |>
+  summarize(courses =n()) |>
+  arrange(desc(courses))
+```
+
+**Q4.** Using the Maryland campaign expenses data, change the datatype of the expenditure_date column so that it is a date and not a chr, saving the result as the same dataframe. Then create a new column for the month based on expenditure_date. Then write code that shows total amount spent each month by Wes Moore's committee (you'll need to search the data to find the exact name). Write a sentence describing the pattern of spending over time.
+**A4.** The pattern is that there is no pattern from month to month. October has the highest and then November drops off to fourth most. 
+
+```{r}
+maryland_expenses |>
+  mutate(expenditure_date = mdy(expenditure_date)) |>
+  mutate(month = floor_date(expenditure_date, "month")) |>
+  filter(committee_name == 'Moore  Wes For Maryland') |>
+  group_by(month) |>
+  summarize(total_amount = sum(amount)) |>
+  arrange(desc(total_amount))
+```
+
+**Q5.** Using case_when(), create a column in the Maryland expenses data called `spending_location` indicating whether each record spent money in Maryland or outside Maryland. For records that are in Maryland, make the new column's value "In-state" and for the others, make it "Out of state". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe).
+**A5** More more is coming from in-state donations than out of state.
+
+```{r}
+maryland_expenses_spending_location <- maryland_expenses |>
+  mutate(
+    state = case_when(
+        str_detect(address, " Maryland ") ~ "In-state",
+        str_detect(address, " California ") ~ "Out of state",
+        str_detect(address, " Washington ") ~ "Out of state",
+        str_detect(address, " Louisiana ") ~ "Out of state",
+        str_detect(address, " Florida ") ~ "Out of state",
+        str_detect(address, " North Carolina ") ~ "Out of state",
+        str_detect(address, " Massachusetts ") ~ "Out of state",
+        str_detect(address, " West Virginia ") ~ "Out of state",
+        str_detect(address, " Virginia ") ~ "Out of state",
+        .default = NA
+      )
+  )
+maryland_expenses_spending_location |>
+  group_by(state) |>
+  summarize(total = sum(amount)) |>
+  arrange(desc(total))
+
+general_22 <- general_22 |>
+  mutate(
+    total_votes = cox + moore + lashar + wallace + write_ins,
+    pct_moore = moore/total_votes
+  )
+ general_22 <- general_22 |>
+  mutate(
+    pct_moore = (moore/total_votes)*100
+  )
+ general_22 <- general_22 |>
+  mutate(
+    pct_moore = (moore/total_votes)*100
+  ) |>
+  arrange(desc(pct_moore))
+ general_22 |>
+  arrange(pct_moore)
+```
+
+
+**Q6.** Choose your own adventure: using either the UMD courses or campaign expenses data, ask and answer a question that is different than the previous ones. You can use one of the ones you provided in the pre_lab.
+**A6.** Which county has the highest percentage of total votes?
+
+```{r}
+total_vote <- md_gov_county |>
+mutate(
+  total_votes = cox + moore + lashar + wallace + harding,
+  pct_total=(total_votes)/(sum(total_votes))*100
+) |>
+  arrange(desc(pct_total))
+```
+```
