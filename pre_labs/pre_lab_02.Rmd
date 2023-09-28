@@ -33,7 +33,7 @@ library(lubridate)
 **Task** Load the UMD courses data by running the following codeblock. NOTE: it's now located in a `data` folder.
 
 ```{r}
-umd_courses <- read_rds("data/umd_courses.rds")
+umd_courses <- read_rds("umd_courses.rds")
 ```
 
 ### Task 3: Glimpse data
