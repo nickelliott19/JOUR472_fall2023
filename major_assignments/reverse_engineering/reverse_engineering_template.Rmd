@@ -25,7 +25,9 @@ In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
 Loading required libraries for this analysis.
 
 ```{r echo=FALSE, message=FALSE}
-
+library(tidyverse)
+library(lubridate)
+library(janitor)
 ```
 
 ## Load and Cleaning Data
@@ -34,12 +36,13 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 ```{r}
 # Load required data
-
+homicide_data <-read_csv("data/homicide-data.csv")
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
 # Clean required data and prepare for analysis if needed. 
-
-
+homicide_data <- homicide_data |>
+  mutate(fixed_date = ymd(reported_date),
+         year = year(fixed_date))
 ```
 
 ## Sentences to Engineer
@@ -47,38 +50,80 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: As Baltimore has seen a stunning surge of violence, with nearly a killing each day for the past three years in a city of 600,000, homicide arrests have plummeted.
+* **Analysis summary**: We found that from 2015-2017 there were 320-342 homicides per year making it around a homicide a day. We filtered the cities just to Baltimore and than used OR code to compile the years the sentence is referring to.
 
 ```{r}
 # Put code to reverse engineer sentence here
+homicide_data <- homicide_data |>
+  mutate(reported_date = ymd(reported_date)) |>
+  mutate(year = year(reported_date))
+  
+homicides_per_day <- homicide_data |>
+  filter(city == "Baltimore") |>
+  filter(year == "2015" | year == "2016" | year == "2017")|>
+  group_by(year) |>
+  summarize(
+    count = n(),
+    average_per_day = count/365
+  )
 
 # Display results of code below this codeblock
-
+homicides_per_day
 ```
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: Of 50 of the nation’s largest cities, Baltimore is one of 34 where police now make homicide arrests less often than in 2014, according to a Washington Post analysis.
+* **Analysis summary**: We able to find 24 cities that had less arrest, however, Baltimore was not a city found to have less arrests since 2014. This might've been because data was entered incorrectly or in a different way than we filtered but we couldn't find any apparent issues. 
 
 ```{r}
 # Put code to reverse engineer sentence here
+arrests_2014 <- homicide_data |>
+  filter(year == "2014" & disposition == "Closed by arrest") |>
+  group_by(city) |>
+  summarize(arrests_2014 = n())
+
+arrests_2017 <- homicide_data |>
+  filter(year == "2017" & disposition == "Closed by arrest") |>
+  group_by(city) |>
+  summarize(arrests_2017 = n())
+
+homicide_arrests<- arrests_2014 |>
+  left_join(arrests_2017) |>
+  mutate(pct_change = ((arrests_2017 - arrests_2014)/arrests_2014)*100) |>
+  filter(pct_change < 0)
 
 # Display results of code below this codeblock
-
+homicide_arrests
 ```
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: Baltimore is also one of 30 cities that have seen an increase in homicides in recent years, with the greatest raw number increase in killings of any city other than Chicago, which has four times the population.
+* **Analysis summary**: We were able to find that Baltimore was one of 23 cities that had an increase in homicides. We are not sure why there are only 23 in the data and not 30 like in the article. We assume there was some data issue but couldn't find it.
 
 ```{r}
 # Put code to reverse engineer sentence here
+homicide_count_2012 <- homicide_data |>
+  filter(year == "2012") |>
+  group_by(city)|>
+  summarize(homicide_count_2012 = n())
+
+homicide_count_2017 <- homicide_data |>
+  filter(year == "2017") |>
+  group_by(city) |>
+  summarize(homicide_count_2017 = n())
+
+homicide_data_combined <- homicide_count_2017 |>
+  left_join(homicide_count_2012) |>
+  filter(city != "New York") |>
+  mutate(raw_number_increase = homicide_count_2017 - homicide_count_2012) |>
+  arrange(desc(raw_number_increase)) |>
+  filter(raw_number_increase > 0)
 
 # Display results of code below this codeblock
-
+homicide_data_combined
 ```
 
 ### Sentence 4
@@ -95,11 +140,13 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 5
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: 
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
+
+
 
 # Display results of code below this codeblock
 
