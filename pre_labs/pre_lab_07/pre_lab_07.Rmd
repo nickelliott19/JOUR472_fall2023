@@ -232,4 +232,4 @@ md_high_schools_with_acs |>
   summarize(avg_income = mean(estimate), count = n())
 ```
 
-**Task** What is another question you could ask of this data? **Answer**
+**Task** What is another question you could ask of this data? **Answer** What counties have the highest increases in average household income and has that lead to an increase in students enrolled in college?
