@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction 
 
-In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
+In this notebook, we are reverse engineering the story,As police struggle to solve homicides, Baltimore residents see an ‘open season for killing’, https://www.washingtonpost.com/investigations/as-police-struggle-to-solve-homicides-baltimore-residents-see-an-open-season-for-killing/2018/12/26/7ee561e4-fb24-11e8-8c9a-860ce2a8148f_story.html
 
 ## Load libraries
 
@@ -128,14 +128,28 @@ homicide_data_combined
 
 ### Sentence 4
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: For most of the decade before 2015, Baltimore’s annual homicide arrest rate hovered at about 40 percent. Since 2015, the arrest rate hasn’t topped 30 percent in any year.
+* **Analysis summary**: We were able to join arrests and homicides and then calculate the rate of which arrests were made for arrests. We were able to confirm the story's findings and also figure out that the number of homicides increased but the arrests didn't.
 
 ```{r}
 # Put code to reverse engineer sentence here
+baltimore_arrests_by_year <- homicide_data |>
+  filter(city == "Baltimore", disposition == "Closed by arrest") |>
+  group_by(year) |>
+  summarize(arrests = n())
+
+baltimore_homicides_by_year <- homicide_data |>
+  filter(city == "Baltimore") |>
+  group_by(year) |>
+  summarize(homicides = n())
+
+baltimore_arrest_rate <- baltimore_arrests_by_year |>
+  left_join(baltimore_homicides_by_year, by = "year") |>
+  mutate(arrest_rate = (arrests/homicides)*100)
 
 # Display results of code below this codeblock
 
+baltimore_arrest_rate
 ```
 
 ### Sentence 5
