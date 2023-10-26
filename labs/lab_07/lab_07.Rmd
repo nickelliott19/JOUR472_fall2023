@@ -52,7 +52,7 @@ v21 <- load_variables(2021, "acs5", cache=TRUE)
 
 ## Answer questions
 
-**Q1** What is the Maryland jurisdiction with the lowest median age, according to the ACS 2021 5-year estimates? You will need to find the variable for median age first (search for it in the 'concept' column at the data frame we just created). **A1**
+**Q1** What is the Maryland jurisdiction with the lowest median age, according to the ACS 2021 5-year estimates? You will need to find the variable for median age first (search for it in the 'concept' column at the data frame we just created). **A1** Baltimore City has the lowest median age.
 
 ```{r}
 md_median_age <- get_acs(geography="county", variables = "B01002_001", state='MD', year=2021)
@@ -60,7 +60,7 @@ md_median_age <- get_acs(geography="county", variables = "B01002_001", state='MD
 md_median_age |> arrange(estimate)
 ```
 
-**Q2** Which Maryland counties have a median age of at least 50? You can use the dataframe you just made to answer this, but you must write code to display only those counties with a median age of at least 50. **A2**
+**Q2** Which Maryland counties have a median age of at least 50? You can use the dataframe you just made to answer this, but you must write code to display only those counties with a median age of at least 50. **A2** Talbot and Worcester County's have a median age of at least 50.
 
 ```{r}
 md_median_age |> filter(estimate >= 50)
@@ -77,7 +77,7 @@ md_median_age |> filter(estimate >= 50)
 
 Which zip code has the highest rate of calls? Which has the lowest?
 
-**A3**
+**A3** 20877 and 20852 have the highest rate of overdose calls and 20832 and 20707 have the lowest.
 
 ```{r}
 moco_911_calls <-read_csv("data/montgomery_2022_overdoses.csv") |>
@@ -103,7 +103,7 @@ moco_join_pop_calls <- moco_join_pop_calls |> mutate(rate_per_1k = (count/estima
 
 **Q5** Go back to your joined dataframe from Q3 and add two more columns representing the minimum and maximum populations based on the estimate and margin of error, then calculate per capita rates for each. Do you get the same two zip codes for the highest and lowest as you did before? Does that give you more or less confidence in your answers to Q3?
 
-**A5** I got the first zip code but the second one is all the way at the bottom.
+**A5** I do get the same zip codes and that does give me confidence since the moe doesn't seem to be big.
 
 ```{r}
 moco_join_pop_calls <- moco_join_pop_calls |> 
