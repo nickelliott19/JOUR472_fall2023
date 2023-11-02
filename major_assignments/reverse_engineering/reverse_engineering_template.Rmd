@@ -61,12 +61,23 @@ homicide_data <- homicide_data |>
   
 homicides_per_day <- homicide_data |>
   filter(city == "Baltimore") |>
-  filter(year == "2015" | year == "2016" | year == "2017")|>
+  filter(year == "2012" | year == "2013" | year == "2014" | year == "2015" | year == "2016" | year == "2017")|>
   group_by(year) |>
   summarize(
     count = n(),
     average_per_day = count/365
   )
+
+homicides_per_day |>
+ ggplot() +
+  geom_bar(aes(x=year, weight=count)) +
+  scale_x_continuous(breaks=c(2012,2013,2014,2015,2016,2017)) +
+  labs(
+    title="Total Homicides Per Year in Baltimore",
+    x = "year",
+    y = "total homicides"
+    ) +
+    theme_clean() 
 
 # Display results of code below this codeblock
 homicides_per_day
@@ -154,16 +165,21 @@ baltimore_arrest_rate
 
 ### Sentence 5
 
-* **Sentence text**: 
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: Of the 1,002 homicides between 2015 and the beginning of this year, just 252 — one out of every four — resulted in an arrest.
+* **Analysis summary**: As you can see from the two datasets, for the recent_homicide_data, you can see 1002 rows meaning there were that many homicides. Then in the total_arrests_count dataset, you can see 252 rows which is the amount of arrests made on those homicides. 
 
 ```{r}
 # Put code to reverse engineer sentence here
+recent_homicide_data <- homicide_data |>
+  filter(str_detect(city, "Baltimore"))|>
+  filter(year == "2015" | year == "2016" | year == "2017" | year == "2018")
 
-
+total_arrests_count <- recent_homicide_data |>
+  filter(disposition == "Closed by arrest")
 
 # Display results of code below this codeblock
-
+recent_homicide_data
+total_arrests_count
 ```
 
 -30-
