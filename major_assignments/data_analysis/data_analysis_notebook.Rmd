@@ -1,0 +1,65 @@
+---
+title: "Data Analysis Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(janitor)
+library(tidyverse)
+library(ggplot2)
+library(tidycensus)
+library(tigris)
+library(sf)
+md_payments <- read_csv("/Users/nicholaselliott19/Desktop/UMD/Courses/JOUR472/JOUR472_fall2023/major_assignments/data_analysis/State_of_Maryland_Payments_Data__FY2008_to_FY2024.csv")|> clean_names()
+# There are 430,584 rows and 8 columns.
+# It could be difficult to define what an "industry" would be and narrowing down the differences like mental health vs. medical health.
+# We have to be able to define the category and what it could help us define. 
+```
+```{r}
+options(scipen = 999)
+md_payments |>
+  group_by(fiscal_year)|>
+  summarize(amount=sum(amount))|>
+  arrange(desc(amount))
+
+md_payments|>
+ggplot() +
+  geom_bar(aes(x = fiscal_year, weight = amount)) +
+  labs(
+    title = "2023 Saw A Surge In Spending ",
+    y = "Percentage of Calls",
+    x = "Month",
+  )
+  
+```
+```{r}
+#Getting acs data on ZCTA
+md_zip_population <- get_acs(geography = "zcta",
+              variables = c(population = "B01001_001"),
+              year = 2019,
+              state = "MD")
+```
+
+```{r}
+# Filtering md_payments to match the ZCTA data
+md_payments_2019 <- md_payments |>
+  filter(fiscal_year=="2019")|>
+  group_by(vendor_zip)|>
+  summarize(amount=sum(amount))|>
+  arrange(desc(amount))
+```
+
+```{r}
+# Joining the md_payments with ZCTA data
+md_payments_2019 <- md_payments_2019 |>
+  inner_join(md_zip_population, by=c('vendor_zip'='GEOID'))
+```
+
+```{r}
+md_payments_2019 <- md_payments_2019 |>
+  mutate(rate = estimate/amount*100)
+```
