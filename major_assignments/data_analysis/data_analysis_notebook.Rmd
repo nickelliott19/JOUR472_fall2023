@@ -63,3 +63,96 @@ md_payments_2019 <- md_payments_2019 |>
 md_payments_2019 <- md_payments_2019 |>
   mutate(rate = estimate/amount*100)
 ```
+
+```{r}
+#Health
+industry_data_health <- md_payments |>
+  filter(str_detect(agency_name, "HEALTH")) |>
+  group_by(fiscal_year) |>
+  summarise(total_health = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "HEALTH")) |>
+  count(agency_name)
+
+#Education
+industry_data_education <- md_payments |>
+  filter(str_detect(agency_name, "EDUCATION") | str_detect(agency_name, "SCHOOL")) |>
+  group_by(fiscal_year) |>
+  summarise(total_education = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "EDUCATION") | str_detect(agency_name, "SCHOOL")) |>
+  count(agency_name)
+
+#Housing
+industry_data_housing <- md_payments |>
+  filter(str_detect(agency_name, "HOUSING")) |>
+  group_by(fiscal_year) |>
+  summarise(total_housing = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "HOUSING")) |>
+  count(agency_name)
+
+#Crime
+industry_data_crime <- md_payments |>
+  filter(str_detect(agency_name, "POLICE") | str_detect(agency_name, "CRIME") | str_detect(agency_name, "SAFETY")) |>
+  group_by(fiscal_year) |>
+  summarise(total_crime = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "POLICE") | str_detect(agency_name, "CRIME") | str_detect(agency_name, "SAFETY")) |>
+  count(agency_name)
+
+#Labor
+industry_data_labor <- md_payments |>
+  filter(str_detect(agency_name, "LABOR")) |>
+  group_by(fiscal_year) |>
+  summarise(total_labor = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "LABOR")) |>
+  count(agency_name)
+
+#Environment
+industry_data_environment <- md_payments |>
+  filter(str_detect(agency_name, "ENVIRONMENT") | str_detect(agency_name, "AGRICULTURE")) |>
+  group_by(fiscal_year) |>
+  summarise(total_environment = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "ENVIRONMENT") | str_detect(agency_name, "AGRICULTURE")) |>
+  count(agency_name)
+
+#Commerce
+industry_data_commerce <- md_payments |>
+  filter(str_detect(agency_name, "COMMERCE") | str_detect(agency_name, "COMPTROLLER")) |>
+  group_by(fiscal_year) |>
+  summarise(total_commerce = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "COMMERCE") | str_detect(agency_name, "COMPTROLLER")) |>
+  count(agency_name)
+
+#Transportation
+industry_data_transportation <- md_payments |>
+  filter(str_detect(agency_name, "HIGH") | str_detect(agency_name, "TRANS") | str_detect(agency_name, "MDOT")) |>
+  group_by(fiscal_year) |>
+  summarise(total_transportation = sum(amount))
+
+md_payments |>
+  filter(str_detect(agency_name, "HIGH") | str_detect(agency_name, "TRANS") | str_detect(agency_name, "MDOT")) |>
+  count(agency_name)
+
+#combine them all
+all_industry_data <- industry_data_commerce |>
+    inner_join(industry_data_crime, by = 'fiscal_year') |>
+    inner_join(industry_data_education, by = 'fiscal_year') |>
+    inner_join(industry_data_environment, by = 'fiscal_year') |>
+    inner_join(industry_data_health, by = 'fiscal_year') |>
+    inner_join(industry_data_housing, by = 'fiscal_year') |>
+    inner_join(industry_data_labor, by = 'fiscal_year') |>
+    inner_join(industry_data_transportation, by = 'fiscal_year')
+```
+
