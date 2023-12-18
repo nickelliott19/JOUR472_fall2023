@@ -47,7 +47,7 @@ geom_line(aes(x=fiscal_year, y=amount)) +
   )
 ```
 ```{r}
-### Question 3: What counties or zip codes receive the most money?
+### Question 2: What counties or zip codes receive the most money?
 #Getting acs data on ZCTA
 # This is zcta data to show how much money is going to each zcta so we can see where money is most allocated
 md_zip_population <- get_acs(geography = "zcta",
