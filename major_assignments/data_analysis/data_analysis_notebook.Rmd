@@ -14,30 +14,42 @@ library(ggplot2)
 library(tidycensus)
 library(tigris)
 library(sf)
+library(lubridate)
 md_payments <- read_csv("/Users/nicholaselliott19/Desktop/UMD/Courses/JOUR472/JOUR472_fall2023/major_assignments/data_analysis/State_of_Maryland_Payments_Data__FY2008_to_FY2024.csv")|> clean_names()
 # There are 430,584 rows and 8 columns.
 # It could be difficult to define what an "industry" would be and narrowing down the differences like mental health vs. medical health.
 # We have to be able to define the category and what it could help us define. 
 ```
 ```{r}
+### Questions 1: How does the distribution of spending change from year to year?
+# Grouping the md_payments by fiscal year to show payment totals for each year
 options(scipen = 999)
-md_payments |>
+md_payments_fiscal_year <- md_payments |>
   group_by(fiscal_year)|>
   summarize(amount=sum(amount))|>
-  arrange(desc(amount))
+  arrange(desc(total))|>
+  # Removed 2023 because it has repeated values that inflate it's number
+  filter(fiscal_year != "2023")|>
+  # Removed 2024 because the year is not over yet thus spending is not comparable
+  filter(fiscal_year != "2024")
 
-md_payments|>
+
+
+md_payments_fiscal_year|>
 ggplot() +
-  geom_bar(aes(x = fiscal_year, weight = amount)) +
+geom_line(aes(x=fiscal_year, y=amount)) +
+    coord_flip()+
   labs(
-    title = "2023 Saw A Surge In Spending ",
-    y = "Percentage of Calls",
-    x = "Month",
+    title = "Maryland State Payments By Fiscal Year ",
+    y = "Total Amount",
+    x = "Fiscal Year",
+    caption = "Source: Maryland State Payments Data"
   )
-  
 ```
 ```{r}
+### Question 3: What counties or zip codes receive the most money?
 #Getting acs data on ZCTA
+# This is zcta data to show how much money is going to each zcta so we can see where money is most allocated
 md_zip_population <- get_acs(geography = "zcta",
               variables = c(population = "B01001_001"),
               year = 2019,
@@ -60,11 +72,23 @@ md_payments_2019 <- md_payments_2019 |>
 ```
 
 ```{r}
+# Calculating rate to see money spend in relation to population of a given zip code
 md_payments_2019 <- md_payments_2019 |>
   mutate(rate = estimate/amount*100)
 ```
 
 ```{r}
+# Filtering just for the zip code with the most money given and we can see Baltimore County Public Schools as getting the most money
+md_payments |>
+  filter(vendor_zip == 21202) |>
+  arrange(desc(amount))
+```
+
+```{r}
+### Questions 3:  Which industries spent the most money?
+
+# Payments by industry
+
 #Health
 industry_data_health <- md_payments |>
   filter(str_detect(agency_name, "HEALTH")) |>
@@ -154,5 +178,51 @@ all_industry_data <- industry_data_commerce |>
     inner_join(industry_data_housing, by = 'fiscal_year') |>
     inner_join(industry_data_labor, by = 'fiscal_year') |>
     inner_join(industry_data_transportation, by = 'fiscal_year')
+```
+```{r}
+### Question 4: Where are lower payments going compared to higher ones?
+
+# Filtering low payments by the amount being under $100
+md_payments_low <- md_payments |>
+  filter(amount < 100) |>
+  rename(amount_low = amount)
+
+# Just showing the 4 columns to see who gets a lot of low payments, which is the Maryland State Department of Education
+md_payments_low |>
+  group_by(agency_name) |>
+  summarise(vendor_name, amount_low, count=n()) |>
+  arrange(desc(count))
+
+# Filtering high payments by the amount being above $1 million
+md_payments_high <- md_payments |>
+  filter(amount > 1000000) |>
+  rename(amount_high = amount)
+
+# Just showing the 4 columns to see who gets a lot of high payments, which is The Maryland Department of Health 
+md_payments_high |> 
+  group_by(agency_name) |>
+  summarise(vendor_name, amount_high, count=n()) |>
+  arrange(desc(count))
+```
+```{r}
+### Question 5: What types of payments are going to education? Are there differences in which systems receive more/less money
+
+# We used the data from the previous questions about industry to then look closer at the education sector
+
+# This is the previous data
+industry_data_education <- md_payments |>
+  filter(str_detect(agency_name, "EDUCATION") | str_detect(agency_name, "SCHOOL")) |>
+  group_by(fiscal_year) |>
+  summarise(total_education = sum(amount))
+
+# This shows how many times a vendor comes up in the data but not entirely showing if they got the most money
+md_payments |>
+  filter(str_detect(agency_name, "EDUCATION") | str_detect(agency_name, "SCHOOL")) |>
+  count(agency_name)
+
+# This just arranges by amount so you can see which vendor got the most money, in this case, Mount Rainier Police Department
+md_payments |>
+  filter(str_detect(agency_name, "EDUCATION") | str_detect(agency_name, "SCHOOL")) |>
+  arrange(desc(amount))
 ```
 
